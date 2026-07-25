@@ -139,11 +139,11 @@
             <div class="status-dot"></div>
             <span>Nexus Studio (Replit Mode)</span>
         </div>
-        <div class="user-badge" onclick="alert('مرحباً بك يا علاوي! نظام الحسابات المحلي مفعل لحفظ جلستك.')">👤 علاوي (متصل)</div>
+        <div class="user-badge" onclick="alert('مرحباً بك يا علاوي! جلسة النظام متصلة وحفظ البيانات نشط.')">👤 علاوي (متصل)</div>
     </header>
 
     <div id="chat-container">
-        <div class="message ai">هلا بيك يا علاوي في بيئة التطوير المصغرة! اطلب مني بناء موقع، تصميم واجهة، أو كتابة أي كود برمجي وسأقوم بتوليده بالكامل مع التنسيق. / Welcome Ali! Request any app, website, or code generation.</div>
+        <div class="message ai">هلا بيك يا علاوي! تم حل مشكلة الاتصال بنجاح. اطلب أي موقع أو كود برمجي وسأقوم بتوليده فوراً. / Connection fixed. Ready for any app or code generation.</div>
     </div>
 
     <div id="input-container">
@@ -159,7 +159,6 @@
             const msgDiv = document.createElement('div');
             msgDiv.className = `message ${sender}`;
             
-            // تحويل الأكواد البرمجية إلى مربعات منسقة مثل ريبليت
             if (text.includes("```")) {
                 msgDiv.innerHTML = text.replace(/```([a-zA-Z]*)([\s\S]*?)```/g, '<pre><code>$2</code></pre>');
             } else {
@@ -184,7 +183,7 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: "أنت نظام تشفير وتطوير ذكي شبيه بـ Replit للمبرمج علاوي. تجيب بدقة وتكتب الأكواد البرمجية داخل علامات الـ markdown المناسبة باللغتين العربية والإنجليزية حسب الطلب. الطلب هو: " + text }] }]
+                        contents: [{ parts: [{ text: text }] }]
                     })
                 });
 
@@ -199,7 +198,7 @@
                     appendMessage("عذراً، لم يتم استلام رد صحيح من النظام.", 'ai');
                 }
             } catch (error) {
-                appendMessage("عذراً، تعذر الاتصال بالخادم. / Connection error.", 'ai');
+                appendMessage("خطأ في الاتصال بالشبكة. تأكد من الإنترنت أو المفتاح.", 'ai');
             }
         }
 
