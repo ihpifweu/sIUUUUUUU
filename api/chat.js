@@ -12,7 +12,11 @@ export default async function handler(req, res) {
     }
 
     const { message } = req.body;
-    const API_KEY = "AQ.Ab8RN6Jxyb5MJPRadWoOzdjbuKN_J3ROCA48HTzxiakkr15mdA";
+    const API_KEY = process.env.GEMINI_API_KEY;
+
+    if (!API_KEY) {
+        return res.status(500).json({ error: { message: "API Key is missing in Vercel settings" } });
+    }
 
     try {
         const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
@@ -32,7 +36,6 @@ export default async function handler(req, res) {
         const data = await response.json();
         return res.status(200).json(data);
     } catch (error) {
-        return res.status(500).json({ error: 'Failed to connect to Gemini API' });
+        return res.status(500).json({ error: { message: 'Failed to connect to Gemini API' } });
     }
 }
-
