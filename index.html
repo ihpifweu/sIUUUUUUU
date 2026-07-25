@@ -1,228 +1,30 @@
-<!DOCTYPE html>
-<html lang="ar" dir="auto">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus Studio - ميني ريبليت الذكي</title>
-    <style>
-        * { box-sizing: border-box; }
-        body {
-            font-family: system-ui, -apple-system, sans-serif;
-            background: linear-gradient(135deg, #090d16, #111827);
-            color: #f8fafc;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-        }
-        header {
-            background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(12px);
-            padding: 14px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-        }
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 16px;
-            font-weight: bold;
-        }
-        .status-dot {
-            width: 9px;
-            height: 9px;
-            background-color: #22c55e;
-            border-radius: 50%;
-            box-shadow: 0 0 8px #22c55e;
-        }
-        .user-badge {
-            background: rgba(59, 130, 246, 0.15);
-            border: 1px solid rgba(59, 130, 246, 0.3);
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            color: #60a5fa;
-            cursor: pointer;
-        }
-        #chat-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-        .message {
-            max-width: 90%;
-            padding: 14px 18px;
-            border-radius: 16px;
-            line-height: 1.6;
-            font-size: 14px;
-            word-wrap: break-word;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            white-space: pre-wrap;
-        }
-        .user {
-            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-            color: white;
-            align-self: flex-start;
-            border-bottom-left-radius: 4px;
-        }
-        .ai {
-            background: rgba(30, 41, 59, 0.85);
-            backdrop-filter: blur(8px);
-            color: #f8fafc;
-            align-self: flex-end;
-            border-bottom-right-radius: 4px;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-        }
-        .ai pre {
-            background: #030712;
-            padding: 12px;
-            border-radius: 10px;
-            overflow-x: auto;
-            direction: ltr;
-            text-align: left;
-            border: 1px solid #1f2937;
-            margin-top: 8px;
-        }
-        #input-container {
-            display: flex;
-            padding: 16px;
-            background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(12px);
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
-            gap: 12px;
-        }
-        textarea {
-            flex: 1;
-            padding: 14px;
-            border-radius: 14px;
-            border: 1px solid #334155;
-            background-color: #030712;
-            color: white;
-            font-size: 14px;
-            outline: none;
-            resize: none;
-            height: 50px;
-            font-family: inherit;
-        }
-        textarea:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-        }
-        button {
-            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-            color: white;
-            border: none;
-            padding: 0 24px;
-            border-radius: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: opacity 0.2s, transform 0.1s;
-        }
-        button:active { 
-            opacity: 0.8;
-            transform: scale(0.97);
-        }
-    </style>
-</head>
-<body>
+async function sendMessage() {
+    const inputField = document.getElementById('user-input');
+    const text = inputField.value.trim();
 
-    <header>
-        <div class="brand">
-            <div class="status-dot"></div>
-            <span>Nexus Studio (AI Mode)</span>
-        </div>
-        <div class="user-badge" onclick="alert('مرحباً بك يا علاوي! النظام الذكي متصل.')">👤 علاوي (متصل)</div>
-    </header>
+    if (text === '') return;
 
-    <div id="chat-container">
-        <div class="message ai">هلا بيك يا علاوي! تم تفعيل الذكاء الاصطناعي الحقيقي بالكامل. اطلب أي فكرة أو مشكلة برمجية وسأقوم بحلها وتحليلها معك فوراً.</div>
-    </div>
+    appendMessage(text, 'user');
+    inputField.value = '';
 
-    <div id="input-container">
-        <textarea id="user-input" placeholder="اطلب كوداً أو اطرح مشكلة برمجية هنا..." rows="1" onkeypress="handleKeyPress(event)"></textarea>
-        <button onclick="sendMessage()">إرسال</button>
-    </div>
+    try {
+        const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: text })
+        });
 
-    <script>
-        const API_KEY = "AQ.Ab8RN6Jxyb5MJPRadWoOzdjbuKN_J3ROCA48HTzxiakkr15mdA";
+        const data = await response.json();
 
-        function appendMessage(text, sender) {
-            const chatContainer = document.getElementById('chat-container');
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `message ${sender}`;
-            
-            if (text.includes("```")) {
-                msgDiv.innerHTML = text.replace(/```([a-zA-Z]*)([\s\S]*?)```/g, '<pre><code>$2</code></pre>');
-            } else {
-                msgDiv.textContent = text;
-            }
-            
-            chatContainer.appendChild(msgDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+        if (data.candidates && data.candidates[0].content) {
+            const reply = data.candidates[0].content.parts[0].text;
+            appendMessage(reply, 'ai');
+        } else if (data.error) {
+            appendMessage("خطأ: " + (data.error.message || "استجابة غير صالحة"), 'ai');
+        } else {
+            appendMessage("عذراً، لم يتم استلام رد صحيح.", 'ai');
         }
-
-        async function sendMessage() {
-            const inputField = document.getElementById('user-input');
-            const text = inputField.value.trim();
-
-            if (text === '') return;
-
-            appendMessage(text, 'user');
-            inputField.value = '';
-
-            try {
-                // استخدام بروكسي آمن ومستقر لتخطي حظر CORS ومنع خطأ الاتصال من الموبايل
-                const proxyUrl = "[https://api.allorigins.win/raw?url=](https://api.allorigins.win/raw?url=)";
-                const targetUrl = `[https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=$](https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=$){API_KEY}`;
-                
-                const response = await fetch(targetUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: text }] }]
-                    })
-                });
-
-                const data = await response.json();
-                
-                if (data.candidates && data.candidates[0].content) {
-                    const reply = data.candidates[0].content.parts[0].text;
-                    appendMessage(reply, 'ai');
-                } else if (data.error) {
-                    appendMessage("خطأ من السيرفر: " + data.error.message, 'ai');
-                } else {
-                    appendMessage("عذراً، لم يتم استلام رد صحيح من النظام.", 'ai');
-                }
-            } catch (error) {
-                // خطة بديلة للاتصال المباشر إذا فشل الـ fetch العادي بسبب قيود المتصفح
-                try {
-                    const fallbackResponse = await fetch(`[https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=$](https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=$){API_KEY}`, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ contents: [{ parts: [{ text: text }] }] })
-                    });
-                    appendMessage("أهلاً بك يا علاوي! تم إرسال الطلب، لكن متصفح الموبايل يحجب القراءة المباشرة. جرب استخدام متصفح يدعم الطلبات الخارجية أو استمر هنا وسأجهز لك التحديثات القادمة فوراً.", 'ai');
-                } catch (err) {
-                    appendMessage("خطأ في الاتصال. تأكد من الإنترنت.", 'ai');
-                }
-            }
-        }
-
-        function handleKeyPress(event) {
-            if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault();
-                sendMessage();
-            }
-        }
-    </script>
-</body>
-</html>
+    } catch (error) {
+        appendMessage("خطأ في الاتصال بالخلفية (Backend).", 'ai');
+    }
+}
