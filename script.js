@@ -1,3 +1,5 @@
+const API_KEY = "AQ.Ab8RN6Jxyb5MJPRadWoOzdjbuKN_J3ROCA48HTzxiakkr15mdA";
+
 function appendMessage(text, sender) {
     const chatContainer = document.getElementById('chat-container');
     const msgDiv = document.createElement('div');
@@ -13,7 +15,7 @@ function appendMessage(text, sender) {
     chatContainer.scrollTop = chatContainer.scrollHeight;
 }
 
-function sendMessage() {
+async function sendMessage() {
     const inputField = document.getElementById('user-input');
     const text = inputField.value.trim();
 
@@ -22,20 +24,28 @@ function sendMessage() {
     appendMessage(text, 'user');
     inputField.value = '';
 
-    setTimeout(() => {
-        let reply = "";
-        const lowerText = text.toLowerCase();
+    try {
+        const response = await fetch(`[https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=$](https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=$){API_KEY}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: text }] }]
+            })
+        });
 
-        if (lowerText.includes("موقع") || lowerText.includes("html") || lowerText.includes("website") || lowerText.includes("css")) {
-            reply = `تفضل يا علاوي هذا كود موقع احترافي متكامل جاهز للنسخ:\n\n\`\`\`html\n<!DOCTYPE html>\n<html lang="ar" dir="rtl">\n<head>\n    <meta charset="UTF-8">\n    <title>موقع احترافي</title>\n    <style>\n        body { background: #0f172a; color: #fff; font-family: sans-serif; text-align: center; padding: 50px; }\n        .card { background: #1e293b; padding: 20px; border-radius: 12px; display: inline-block; }\n        h1 { color: #3b82f6; }\n    </style>\n</head>\n<body>\n    <div class="card">\n        <h1>مرحباً بك يا علاوي!</h1>\n    </div>\n</body>\n</html>\n\`\`\``;
-        } else if (lowerText.includes("حساب") || lowerText.includes("تسجيل")) {
-            reply = `نظام الحسابات والبيانات في Nexus Studio يعمل حالياً بذاكرة المتصفح المحلية (LocalStorage) لحفظ مشاريعك وجلساتك بكل أمان!`;
+        const data = await response.json();
+        
+        if (data.candidates && data.candidates[0].content) {
+            const reply = data.candidates[0].content.parts[0].text;
+            appendMessage(reply, 'ai');
+        } else if (data.error) {
+            appendMessage("خطأ من السيرفر: " + data.error.message, 'ai');
         } else {
-            reply = `أهلاً بك يا علاوي! تم استلام طلبك: "${text}"\nالنظام يعمل بكفاءة تامة لتوليد الأكواد والمواقع.`;
+            appendMessage("عذراً، لم يتم استلام رد صحيح من النظام.", 'ai');
         }
-
-        appendMessage(reply, 'ai');
-    }, 600);
+    } catch (error) {
+        appendMessage("خطأ في الاتصال بالشبكة. تأكد من الإنترنت أو المفتاح.", 'ai');
+    }
 }
 
 function handleKeyPress(event) {
@@ -48,4 +58,3 @@ function handleKeyPress(event) {
 function toggleAuthModal() {
     alert("مرحباً بك يا علاوي! أنت مسجل الدخول حالياً كمدير للنظام (Admin Session Active).");
 }
-
